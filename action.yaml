@@ -1,0 +1,27 @@
+name: 'maven deploy'
+description: 'deploy using maven as build tool'
+inputs:
+  java-version:
+    description: 'jdk version'
+    default: '17'
+  java-distribution:
+    description: 'jdk distribution'
+    default: 'temurin'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+    - name: set up jdk
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: ${{ inputs.java-distribution }}
+        cache: maven
+        gpg-private-key: ${{ secrets.ARTIFACT_SIGNING_GPG_PRIVATE_KEY }}
+    - name: execute maven
+      shell: bash
+      run: export GPG_TTY=$(tty) && mvn --batch-mode deploy -e
+      env:
+        GPG_KEY_NAME: ${{ secrets.ARTIFACT_SIGNING_GPG_KEY_NAME }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.ARTIFACT_SIGNING_GPG_PRIVATE_KEY_PASSWORD }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
