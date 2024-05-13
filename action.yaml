@@ -35,7 +35,8 @@ runs:
         gpg-private-key: ${{ inputs.gpg-private-key }}
         server-username: SERVER_USER
         server-password: SERVER_PASSWORD
-    - name: execute maven
+    - name: execute maven deploy
+      if: ${{ github.actor != 'dependabot[bot]' }}
       shell: bash
       run: export GPG_TTY=$(tty) && mvn --batch-mode deploy -e
       env:
@@ -43,3 +44,7 @@ runs:
         MAVEN_GPG_PASSPHRASE: ${{ inputs.gpg-passphrase }}
         SERVER_USER: ${{ inputs.deploy-user }}
         SERVER_PASSWORD: ${{ inputs.deploy-password }}
+    - name: execute maven deploy
+      if: ${{ github.actor == 'dependabot[bot]' }}
+      shell: bash
+      run: mvn --batch-mode install -e
